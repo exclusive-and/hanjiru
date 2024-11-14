@@ -1,0 +1,6 @@
+signature Hanjiru.Token where
+
+data Token = TokStart | TokEnd
+
+instance Eq Token
+instance Show Token
