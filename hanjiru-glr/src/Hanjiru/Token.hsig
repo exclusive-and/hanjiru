@@ -1,6 +1,8 @@
 signature Hanjiru.Token where
 
-data Token = TokStart | TokEnd
+import Prelude (Eq, Show)
+
+data Token
 
 instance Eq Token
 instance Show Token
