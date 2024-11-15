@@ -1,0 +1,4 @@
+packages:
+    ./hanjiru-glr/
+    ./examples/tomita-glr-example/
+    ./examples/tomita-glr-example-token-impl/

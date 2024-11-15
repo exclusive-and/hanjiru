@@ -1,0 +1,26 @@
+cabal-version:      3.4
+name:               tomita-glr-example
+version:            0.1.0.0
+-- synopsis:
+-- description:
+license:            BSD-3-Clause
+license-file:       LICENSE
+author:             exclusive-and
+maintainer:         exclusiveandgate@gmail.com
+-- copyright:
+build-type:         Simple
+extra-doc-files:    CHANGELOG.md
+-- extra-source-files:
+
+common warnings
+    ghc-options: -Wall
+
+library
+    import: warnings
+    mixins: hanjiru-glr requires (Hanjiru.Token as Example.Token)
+    hs-source-dirs:   src
+    exposed-modules:
+        Example.Actions
+    build-depends:    base ^>=4.17.0.0,
+                      hanjiru-glr,
+                      tomita-glr-example-token-impl
