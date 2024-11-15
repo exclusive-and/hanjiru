@@ -24,17 +24,17 @@ symbol x =
     case x of
         Literal    tok      -> tok
         Production tok _ _  -> tok
-        Ambiguity  tok _    -> tok
+        Ambiguity  tok   _  -> tok
 
 ambiguity :: Parse a -> Parse a -> Parse a
 ambiguity x y =
     case y of
-        Literal tok ->
-            Ambiguity tok [x, y]
-        Production tok _ _  ->
-            Ambiguity tok [x, y]
-        Ambiguity tok ys ->
-            Ambiguity tok (x:ys)
+        Literal    tok      -> Ambiguity tok [x, y]
+        Production tok _ _  -> Ambiguity tok [x, y]
+        Ambiguity  tok   ys -> Ambiguity tok (x:ys)
+
+instance Pretty (Parse a) where
+    pretty = prettyParse
 
 instance Show (Parse a) where
     show = show . prettyParse
@@ -42,9 +42,15 @@ instance Show (Parse a) where
 prettyParse :: Parse a -> Doc ()
 prettyParse x =
     case x of
-        Literal tok -> viaShow tok
-        Production tok _ args ->
-            viaShow tok <> line <> indent 4 (vsep $ map prettyParse args)
-        Ambiguity tok args ->
-            viaShow tok <+> enclose "[" "]"
-                (line <> indent 4 (vsep $ map prettyParse args) <> line)
+        Literal    tok      -> viaShow tok
+        Production tok _ xs -> prettyProduction tok xs
+        Ambiguity  tok   xs -> prettyAmbiguity  tok xs
+    where
+    prettyProduction tok xs =
+        viaShow tok <> line
+            <> (indent 4 $ vsep $ map prettyParse xs)
+    
+    prettyAmbiguity tok xs =
+        viaShow tok <+> lbracket <> line
+            <> (indent 4 $ vsep $ map prettyParse xs)
+            <> rbracket <> line
