@@ -15,19 +15,21 @@ data Reduction =
 -}
 
 -- | 
-reduce :: Reduction -> ParseStack a -> [(Parse a, ParseStack a)]
-reduce (MkReduction tok numConsumed) stack =
-    consumeN numConsumed stack (Production tok numConsumed)
+reduce :: ParseStack a -> Reduction -> [(Reduced a, ParseStack a)]
+reduce stack (MkReduction tok numConsumed) =
+    consumeN numConsumed stack $
+        \state parses -> Reduced state tok (Production tok numConsumed parses)
 
-pack :: forall a. Eq a => Int -> Parse a -> ParseStack a -> [ParseStack a] -> [ParseStack a]
-pack state parse stack = go id
+data Reduced a = Reduced Int Token (Parse a)
+
+pack :: forall a. Eq a => (Reduced a, ParseStack a) -> [ParseStack a] -> [ParseStack a]
+pack (Reduced state _ parse, stack) = go []
     where
-    go :: ([ParseStack a] -> [ParseStack a]) -> [ParseStack a] -> [ParseStack a]
-    go f [] = insert (push 0 state parse stack) (f [])
-    go f (candidate:stacks) =
+    go xs [] = insert (push 0 state parse stack) (reverse xs)
+    go xs (candidate:stacks) =
         case tryPack candidate of
-            Just packed -> insert packed (f stacks)
-            Nothing     -> go ((candidate:) . f) stacks
+            Just packed -> reverse xs ++ (packed:stacks)
+            Nothing     -> go (candidate:xs) stacks
     
     tryPack (ParseHead uniq state' parse' stack')
         | state == state'

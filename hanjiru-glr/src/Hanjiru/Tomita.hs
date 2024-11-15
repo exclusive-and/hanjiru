@@ -2,12 +2,13 @@ module Hanjiru.Tomita where
 
 import Hanjiru.Token
 import Hanjiru.Tomita.Parse
-import Hanjiru.Tomita.Reduce (Reduction)
+import Hanjiru.Tomita.Reduce (Reduction, Reduced(..))
 import Hanjiru.Tomita.Reduce qualified as Hanjiru
 import Hanjiru.Tomita.Shift  qualified as Hanjiru
 import Hanjiru.Tomita.Stack
 
 import Control.Monad.Writer
+import Data.List (sort)
 
 parse :: forall a. Eq a => ActionTable -> GotoTable -> [Token] -> [ParseResult a]
 parse action goto = execWriter . foldM tomita [ParseStack 0 0 []]
@@ -27,8 +28,8 @@ parse action goto = execWriter . foldM tomita [ParseStack 0 0 []]
 
         reduce rs =
             let
-                reduced = concatMap (reduceStep stack) rs
-                stacks' = foldl packStep stacks reduced
+                reduced = concatMap (Hanjiru.reduce stack) rs
+                stacks' = foldr Hanjiru.pack stacks (map nextState reduced)
             in
                 tomita stacks' tok
 
@@ -36,19 +37,10 @@ parse action goto = execWriter . foldM tomita [ParseStack 0 0 []]
             let
                 stack' = Hanjiru.shift 0 state tok stack
             in
-                Hanjiru.merge . (stack':) <$> reduce rs
+                sort . Hanjiru.merge . (stack':) <$> reduce rs
     
-    reduceStep :: ParseStack a -> Reduction -> [(Int, Parse a, ParseStack a)]
-    reduceStep stack reduction =
-        let
-            next (parse', stack') = (state', parse', stack')
-                where state' = goto (top stack') (symbol parse')
-        in
-            map next (Hanjiru.reduce reduction stack)
-    
-    packStep :: [ParseStack a] -> (Int, Parse a, ParseStack a) -> [ParseStack a]
-    packStep stacks (state', parse', stack') =
-        Hanjiru.pack state' parse' stack' stacks
+    nextState (Reduced state tok parse', stack) =
+        (Reduced (goto state tok) tok parse', stack)
 
 data ParseResult a =
       ParseOk [Parse a]

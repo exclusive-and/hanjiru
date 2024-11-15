@@ -33,9 +33,9 @@ push :: Int -> Int -> Parse a -> ParseStack a -> ParseStack a
 push _ state parse stack =
     ParseHead (height stack + 1) state parse stack
 
-consumeN :: Int -> ParseStack a -> ([Parse a] -> b) -> [(b, ParseStack a)]
+consumeN :: Int -> ParseStack a -> (Int -> [Parse a] -> b) -> [(b, ParseStack a)]
 consumeN n0 stack0 f = go n0 [] stack0
     where
-    go 0 xs stack = [(f xs, stack)]
+    go 0 xs stack = [(f (top stack) xs, stack)]
     go n xs (ParseStack _ _ tails) =
         concatMap (\(ParseTail parse stack) -> go (n - 1) (parse:xs) stack) tails
