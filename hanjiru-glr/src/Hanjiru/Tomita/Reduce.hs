@@ -4,8 +4,7 @@ import Hanjiru.Token
 import Hanjiru.Tomita.Parse
 import Hanjiru.Tomita.Stack
 
-import Data.List (insert, sortOn)
-import Debug.Trace
+import Data.List (insert)
 
 -- | A reduction pops some tokens from the parse stack, and combines them into a new token.
 data Reduction =
@@ -20,14 +19,18 @@ reduce :: Reduction -> ParseStack a -> [(Parse a, ParseStack a)]
 reduce (MkReduction tok numConsumed) stack =
     consumeN numConsumed stack (Production tok numConsumed)
 
-pack :: Eq a => Int -> Parse a -> ParseStack a -> [ParseStack a] -> [ParseStack a]
-pack state0 parse0 stack0 = go []
+pack :: forall a. Eq a => Int -> Parse a -> ParseStack a -> [ParseStack a] -> [ParseStack a]
+pack state parse stack = go id
     where
-    go xs [] = insert (ParseHead (height stack0 + 1) state0 parse0 stack0) (reverse xs)
-    go xs (stack1:stacks) =
-        case stack1 of
-            ParseHead uniq state1 parse1 stack2
-                | state0 == state1
-                , stack0 == stack2 ->
-                    insert (ParseHead uniq state0 (ambiguity parse0 parse1) stack0) (reverse xs ++ stacks)
-            _ -> go (stack1:xs) stacks
+    go :: ([ParseStack a] -> [ParseStack a]) -> [ParseStack a] -> [ParseStack a]
+    go f [] = insert (push 0 state parse stack) (f [])
+    go f (candidate:stacks) =
+        case tryPack candidate of
+            Just packed -> insert packed (f stacks)
+            Nothing     -> go ((candidate:) . f) stacks
+    
+    tryPack (ParseHead uniq state' parse' stack')
+        | state == state'
+        , stack == stack' =
+            Just (push uniq state (ambiguity parse parse') stack)
+    tryPack _ = Nothing

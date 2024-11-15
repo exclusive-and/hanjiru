@@ -39,4 +39,5 @@ library
     -- other-extensions:
     build-depends:
         base ^>=4.17.0.0,
+        mtl,
         prettyprinter

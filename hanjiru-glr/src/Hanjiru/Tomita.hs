@@ -2,49 +2,56 @@ module Hanjiru.Tomita where
 
 import Hanjiru.Token
 import Hanjiru.Tomita.Parse
-import Hanjiru.Tomita.Reduce
-import Hanjiru.Tomita.Shift
+import Hanjiru.Tomita.Reduce (Reduction)
+import Hanjiru.Tomita.Reduce qualified as Hanjiru
+import Hanjiru.Tomita.Shift  qualified as Hanjiru
 import Hanjiru.Tomita.Stack
 
-import Data.List (sortOn)
+import Control.Monad.Writer
 
-parse :: forall a. Eq a => ActionTable -> GotoTable -> [Token] -> ([ParseResult a], [ParseStack a])
-parse action goto = foldl (tomita action goto) ([], [ParseStack 0 0 []])
-
-tomita :: forall a. Eq a => ActionTable -> GotoTable -> ([ParseResult a], [ParseStack a]) -> Token -> ([ParseResult a], [ParseStack a])
-tomita action goto (results, stacks) tok =
-        let
-            (results', stacks') = go [] tok stacks
-        in
-            (results <> results', stacks')
+parse :: forall a. Eq a => ActionTable -> GotoTable -> [Token] -> [ParseResult a]
+parse action goto = execWriter . foldM tomita [ParseStack 0 0 []]
     where
-    go _ tok stacks =
-        let
-            (results', stacks') = reduceAll [] tok stacks
-        in
-            (results', shiftAll tok stacks')
-    
-    reduceAll results _ [] = (results, [])
-    reduceAll results tok (stack:stacks) =
+    tomita :: [ParseStack a] -> Token -> Writer [ParseResult a] [ParseStack a]
+    tomita [] _tok            = pure []
+    tomita (stack:stacks) tok =
         case action (top stack) tok of
-            Accept -> reduceAll (ParseOK (peek stack) : results) tok stacks
-            Error  -> reduceAll results tok stacks
-            Reduce rs -> goReduceAll rs
-            Shift  rs state -> let (results', stacks') = goReduceAll rs in (results', (push 0 state tok stack):stacks')
+            Accept -> accept
+            Error  -> reject
+            Reduce rs       -> reduce rs
+            Shift  rs state -> shift rs state
         where
-        goReduceAll rs =
+        accept = tell [ParseOk (peek stack)] >> tomita stacks tok
+
+        reject = tomita stacks tok
+
+        reduce rs =
             let
-                reds = concat [ reduce r stack | r <- rs ]
-                stacks' = foldl (\stk (p, s) -> pack (goto (top s) (symbol p)) p s stk) stacks reds
+                reduced = concatMap (reduceStep stack) rs
+                stacks' = foldl packStep stacks reduced
             in
-                reduceAll results tok stacks'
+                tomita stacks' tok
+
+        shift rs state =
+            let
+                stack' = Hanjiru.shift 0 state tok stack
+            in
+                Hanjiru.merge . (stack':) <$> reduce rs
     
-    shiftAll tok [] = []
-    shiftAll tok stacks =
-        merge stacks
+    reduceStep :: ParseStack a -> Reduction -> [(Int, Parse a, ParseStack a)]
+    reduceStep stack reduction =
+        let
+            next (parse', stack') = (state', parse', stack')
+                where state' = goto (top stack') (symbol parse')
+        in
+            map next (Hanjiru.reduce reduction stack)
+    
+    packStep :: [ParseStack a] -> (Int, Parse a, ParseStack a) -> [ParseStack a]
+    packStep stacks (state', parse', stack') =
+        Hanjiru.pack state' parse' stack' stacks
 
 data ParseResult a =
-      ParseOK [Parse a]
+      ParseOk [Parse a]
     | ParseError (ParseStack a)
     deriving Show
 

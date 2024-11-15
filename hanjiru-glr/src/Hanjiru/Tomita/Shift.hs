@@ -1,10 +1,15 @@
 module Hanjiru.Tomita.Shift where
 
 import Hanjiru.Token
+import Hanjiru.Tomita.Parse
 import Hanjiru.Tomita.Stack
 
 import Data.List.NonEmpty (NonEmpty((:|)), sortWith)
 import Data.List.NonEmpty qualified as NonEmpty
+
+shift :: Int -> Int -> Token -> ParseStack a -> ParseStack a
+shift uniq state tok stack =
+    push uniq state (Literal tok) stack
 
 merge :: [ParseStack a] -> [ParseStack a]
 -- short circuit: no stacks --> nothing to merge
