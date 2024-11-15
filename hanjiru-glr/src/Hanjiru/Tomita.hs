@@ -20,7 +20,7 @@ tomita action goto (results, stacks) tok =
     where
     go _ tok stacks =
         let
-            (results', stacks') = reduceAll [] tok (reverse $ sortOn height stacks)
+            (results', stacks') = reduceAll [] tok stacks
         in
             (results', shiftAll tok stacks')
     
@@ -37,7 +37,7 @@ tomita action goto (results, stacks) tok =
                 reds = concat [ reduce r stack | r <- rs ]
                 stacks' = foldl (\stk (p, s) -> pack (goto (top s) (symbol p)) p s stk) stacks reds
             in
-                reduceAll results tok (reverse $ sortOn height stacks')
+                reduceAll results tok stacks'
     
     shiftAll tok [] = []
     shiftAll tok stacks =

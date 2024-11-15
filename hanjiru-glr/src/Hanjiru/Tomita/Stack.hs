@@ -11,7 +11,7 @@ data ParseStack a = ParseStack Int Int [ParseTail a]
 deriving instance Eq a => Eq (ParseStack a)
 
 instance Eq a => Ord (ParseStack a) where
-    compare stack0 stack1 = compare (height stack0) (height stack1)
+    compare stack0 stack1 = compare (height stack1) (height stack0)
 
 pattern ParseHead :: Int -> Int -> Parse a -> ParseStack a -> ParseStack a
 pattern ParseHead uniq state parse stack =
