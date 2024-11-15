@@ -39,7 +39,7 @@ instance Pretty (Parse a) where
 instance Show (Parse a) where
     show = show . prettyParse
 
-prettyParse :: Parse a -> Doc ()
+prettyParse :: Parse a -> Doc ann
 prettyParse x =
     case x of
         Literal    tok      -> viaShow tok
