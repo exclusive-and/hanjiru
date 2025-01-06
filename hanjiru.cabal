@@ -36,7 +36,7 @@ library
         ScopedTypeVariables
         StandaloneDeriving
     exposed-modules:
-        Hanjiru.MakeParser
+        -- Hanjiru.MakeParser
         Hanjiru.MakeParser.LR
         Hanjiru.MakeParser.Rules
         -- Hanjiru.Tomita
@@ -45,11 +45,11 @@ library
         -- Hanjiru.Tomita.Shift
         -- Hanjiru.Tomita.Stack
     other-modules:
+        Data.Hanjiru.Fix
         Data.Hanjiru.List
-        Data.Hanjiru.Saturate
     -- other-extensions:
     build-depends:
-        base ^>=4.17.0.0,
+        base ^>=4.20,
         containers,
         mtl,
         prettyprinter,
