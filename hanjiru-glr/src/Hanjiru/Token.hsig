@@ -1,8 +1,0 @@
-signature Hanjiru.Token where
-
-import Prelude (Eq, Show)
-
-data Token
-
-instance Eq Token
-instance Show Token

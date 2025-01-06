@@ -1,5 +1,5 @@
 cabal-version:      3.4
-name:               hanjiru-glr
+name:               hanjiru
 version:            0.1.0.0
 -- synopsis:
 -- description:
@@ -13,31 +13,44 @@ extra-doc-files:    CHANGELOG.md
 -- extra-source-files:
 
 common warnings
-    ghc-options: -Wall
+    ghc-options:
+        -Wall
+        -Wno-name-shadowing
+        -Wno-unused-imports
+        -Wno-unused-matches
 
 library
     import:           warnings
     hs-source-dirs:   src
     default-language: Haskell2010
+
     default-extensions:
+        DeriveFoldable
+        GeneralizedNewtypeDeriving
         ImportQualifiedPost
         LambdaCase
+        OverloadedLists
         OverloadedStrings
         PatternSynonyms
         RankNTypes
         ScopedTypeVariables
         StandaloneDeriving
-    signatures:
-        Hanjiru.Token
     exposed-modules:
-        Hanjiru.Tomita
-        Hanjiru.Tomita.Parse
-        Hanjiru.Tomita.Reduce
-        Hanjiru.Tomita.Shift
-        Hanjiru.Tomita.Stack
-    -- other-modules:
+        Hanjiru.MakeParser
+        Hanjiru.MakeParser.LR
+        Hanjiru.MakeParser.Rules
+        -- Hanjiru.Tomita
+        -- Hanjiru.Tomita.Parse
+        -- Hanjiru.Tomita.Reduce
+        -- Hanjiru.Tomita.Shift
+        -- Hanjiru.Tomita.Stack
+    other-modules:
+        Data.Hanjiru.List
+        Data.Hanjiru.Saturate
     -- other-extensions:
     build-depends:
         base ^>=4.17.0.0,
+        containers,
         mtl,
-        prettyprinter
+        prettyprinter,
+        transformers

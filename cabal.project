@@ -1,5 +1,2 @@
 packages:
-    ./hanjiru-lr-gen/
-    ./hanjiru-glr/
-    ./examples/tomita-glr-example/
-    ./examples/tomita-glr-example-token-impl/
+    ./
