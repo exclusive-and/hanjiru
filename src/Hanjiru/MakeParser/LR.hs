@@ -1,8 +1,8 @@
 module Hanjiru.MakeParser.LR where
 
 import Data.Foldable (foldrM)
+import Data.Hanjiru.Fix
 import Data.Hanjiru.List
-import Data.Hanjiru.Saturate
 import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.Set (Set)
@@ -21,7 +21,7 @@ closure = saturate go
         go lr@(LR items) = foldrM (uncurry expandItemInClosure) lr (Map.toList items)
 
 -- | Expand a non-terminal item, and add its expansion to the closure.
-expandItemInClosure :: Ord a => Item a -> Set a -> LR a -> Change (LR a)
+expandItemInClosure :: Ord a => Item a -> Set a -> LR a -> Changes (LR a)
 expandItemInClosure item la lr = nonterm (pure lr) go item
     where
         go tok alts beta =
@@ -38,7 +38,7 @@ expandItemInClosure item la lr = nonterm (pure lr) go item
 --    * The item was not already in the LR state, or
 --
 --    * The item was in the LR state, but its lookahead set is different.
-extend :: Ord a => Item a -> Set a -> LR a -> Change (LR a)
+extend :: Ord a => Item a -> Set a -> LR a -> Changes (LR a)
 extend item la (LR items) = do
     let (maybeOld, xs') = Map.insertLookupWithKey (\_ -> Set.union) item la items
     case maybeOld of

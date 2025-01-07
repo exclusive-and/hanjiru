@@ -1,8 +1,8 @@
 module Hanjiru.MakeParser.Rules where
 
 import Control.Monad.Trans.State
+import Data.Hanjiru.Fix
 import Data.Hanjiru.List
-import Data.Hanjiru.Saturate
 import Data.List.NonEmpty (NonEmpty ((:|)))
 import Data.List.NonEmpty qualified as NE
 import Data.Map (Map)
