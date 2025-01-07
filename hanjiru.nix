@@ -1,5 +1,5 @@
 { mkDerivation
-, stdenv
+, lib
 , base
 , containers
 , mtl
@@ -20,7 +20,7 @@ let
             transformers
         ];
         librarySystemDepends = [];
-        license = stdenv.lib.licenses.bsd3;
+        license = lib.licenses.bsd3;
     };
 in
     hanjiru
