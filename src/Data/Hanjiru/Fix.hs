@@ -15,11 +15,11 @@ changed x = tell (Any True) >> pure x
 
 -- | Apply a function to a value if it hasn't converged.
 apChanges :: (a -> a) -> Changes a -> a
-apChanges f cx =
-    let
-        (y, hasChanges) = runWriter cx
-    in
-        if getAny hasChanges then f y else y
+apChanges f cx
+    | hasChanges = f y
+    | otherwise  =   y
+    where
+        (y, Any hasChanges) = runWriter cx
 
 -- | Repeatedly apply a function to a value until it converges.
 saturate :: (a -> Changes a) -> a -> a
