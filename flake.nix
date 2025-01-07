@@ -14,6 +14,12 @@
         in
             {
                 packages.${system}.default = hanjiru;
-                devShells.${system}.default = hanjiru.env;
+                devShells.${system}.default = haskell.shellFor {
+                    packages = _: [ hanjiru ];
+                    nativeBuildInputs = [
+                        haskell.cabal-install
+                        haskell.haskell-language-server
+                    ];
+                };
             };
 }
