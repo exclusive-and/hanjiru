@@ -35,6 +35,7 @@ library
         RankNTypes
         ScopedTypeVariables
         StandaloneDeriving
+        TupleSections
     exposed-modules:
         -- Hanjiru.MakeParser
         Hanjiru.MakeParser.Lookahead
