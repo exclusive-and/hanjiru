@@ -1,7 +1,5 @@
 module Hanjiru.MakeParser.Rules where
 
-import Control.Monad.Trans.State
-import Data.Hanjiru.Fix
 import Data.Hanjiru.List
 import Data.List.NonEmpty (NonEmpty ((:|)))
 import Data.List.NonEmpty qualified as NE
@@ -57,22 +55,6 @@ view grammar = goView where
 
 viewAll :: Ord a => Map a (NonEmpty (Rule a)) -> Map a (View a)
 viewAll grammar = Map.mapWithKey (const . view grammar) grammar
-
--- | Drill down into a symbol to get the set of all terminals that can prefix it.
-first :: Ord a => View a -> Set a
-first x = evalState (go x) Set.empty
-    where
-        go (Term tok) = do
-            visited <- get
-            put (Set.insert tok visited)
-            pure (Set.singleton tok)
-        go (NonTerm tok alts) = do
-            visited <- get
-            if Set.member tok visited
-                then pure Set.empty
-                else do
-                    put (Set.insert tok visited)
-                    sconcat <$> traverse (\(Alt rhs) -> go (NE.head rhs)) alts
 
 -- | The incomplete parse of a single grammar rule.
 --

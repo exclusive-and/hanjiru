@@ -37,6 +37,7 @@ library
         StandaloneDeriving
     exposed-modules:
         -- Hanjiru.MakeParser
+        Hanjiru.MakeParser.Lookahead
         Hanjiru.MakeParser.LR
         Hanjiru.MakeParser.Rules
         -- Hanjiru.Tomita

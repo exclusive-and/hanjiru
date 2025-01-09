@@ -7,6 +7,7 @@ import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
+import Hanjiru.MakeParser.Lookahead
 import Hanjiru.MakeParser.Rules
 
 -- | An LR(1) parse state.
