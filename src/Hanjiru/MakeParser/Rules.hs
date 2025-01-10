@@ -56,6 +56,10 @@ view grammar = goView where
 viewAll :: Ord a => Map a (NonEmpty (Rule a)) -> Map a (View a)
 viewAll grammar = Map.mapWithKey (const . view grammar) grammar
 
+symbol :: View a -> a
+symbol (Term tok)       = tok
+symbol (NonTerm tok _)  = tok
+
 -- | The incomplete parse of a single grammar rule.
 --
 -- Includes the expanded form of the rule being parsed, along with a list of the tokens

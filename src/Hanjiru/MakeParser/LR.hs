@@ -13,21 +13,25 @@ import Hanjiru.MakeParser.Rules
 -- | An LR(1) parse state.
 --
 -- 
-newtype LR a = LR (Map (Item a) (Set a))
+newtype LR a = LR (Map (Item a) (LA a))
     deriving (Eq, Ord, Semigroup)
 
-closure :: Ord a => LR a -> LR a
-closure = saturate go
+closure :: Ord a => Map a (LA a) -> LR a -> LR a
+closure lookaheads = saturate go
     where
-        go lr@(LR items) = foldrM (uncurry expandItemInClosure) lr (Map.toList items)
+        go lr@(LR items) =
+            foldrM
+                (uncurry $ expandItemInClosure lookaheads)
+                lr
+                (Map.toList items)
 
 -- | Expand a non-terminal item, and add its expansion to the closure.
-expandItemInClosure :: Ord a => Item a -> Set a -> LR a -> Changes (LR a)
-expandItemInClosure item la lr = nonterm (pure lr) go item
+expandItemInClosure :: Ord a => Map a (LA a) -> Item a -> LA a -> LR a -> Changes (LR a)
+expandItemInClosure lookaheads item la lr = nonterm (pure lr) go item
     where
         go tok alts beta =
             let
-                la' = list la (\a _ -> first a) beta
+                la' = first lookaheads la beta
                 inner alt@(Alt gamma) = extend (toItem tok alt gamma) la'
             in
                 foldrM inner lr alts
@@ -39,17 +43,17 @@ expandItemInClosure item la lr = nonterm (pure lr) go item
 --    * The item was not already in the LR state, or
 --
 --    * The item was in the LR state, but its lookahead set is different.
-extend :: Ord a => Item a -> Set a -> LR a -> Changes (LR a)
-extend item la (LR items) = do
-    let (maybeOld, xs') = Map.insertLookupWithKey (\_ -> Set.union) item la items
+extend :: Ord a => Item a -> LA a -> LR a -> Changes (LR a)
+extend item (LA la) (LR items) = do
+    let (maybeOld, xs') = Map.insertLookupWithKey (\_ -> (<>)) item (LA la) items
     case maybeOld of
         Nothing -> changed (LR xs')
-        Just old
+        Just (LA old)
             | Set.isSubsetOf la old -> pure (LR xs')
             | otherwise             -> changed (LR xs')
 
-gotos :: Ord a => LR a -> Map (View a) (LR a)
-gotos (LR items) = closure <$> Map.fromListWith (<>) items'
+gotos :: Ord a => Map a (LA a) -> LR a -> Map (View a) (LR a)
+gotos lookaheads (LR items) = closure lookaheads <$> Map.fromListWith (<>) items'
     where
         items' =
             [ (x, LR (Map.singleton (Item tok alt xs) la))
