@@ -70,8 +70,6 @@ type SccStep s a =
             (ST s)
             ([SCC a], [Vertex])
 
--- TODO: refactor as a foldr/foldrM
-
 type Vertex = Int
 
 data Graph a = Graph
