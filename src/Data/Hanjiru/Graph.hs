@@ -4,8 +4,6 @@ import Control.Monad.ST
 import Control.Monad.Trans.Reader
 import Data.Foldable
 import Data.List.NonEmpty (NonEmpty ((:|)))
-import Data.List.NonEmpty qualified as NE
-import Data.Maybe
 import Data.Primitive.Array
 
 -- | Strongly connected component of a graph.
