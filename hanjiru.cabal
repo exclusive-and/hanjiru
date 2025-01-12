@@ -29,6 +29,7 @@ library
         GeneralizedNewtypeDeriving
         ImportQualifiedPost
         LambdaCase
+        MultiWayIf
         OverloadedLists
         OverloadedStrings
         PatternSynonyms
@@ -48,6 +49,7 @@ library
         -- Hanjiru.Tomita.Stack
     other-modules:
         Data.Hanjiru.Fix
+        Data.Hanjiru.Graph
         Data.Hanjiru.List
     -- other-extensions:
     build-depends:
@@ -55,4 +57,5 @@ library
         containers,
         mtl,
         prettyprinter,
+        primitive,
         transformers

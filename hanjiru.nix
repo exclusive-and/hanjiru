@@ -4,6 +4,7 @@
 , containers
 , mtl
 , prettyprinter
+, primitive
 , transformers
 }:
 
@@ -17,6 +18,7 @@ let
             containers
             mtl
             prettyprinter
+            primitive
             transformers
         ];
         librarySystemDepends = [];
