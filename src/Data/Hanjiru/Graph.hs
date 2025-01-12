@@ -19,13 +19,15 @@ sccmap f (Graph g xs) =
     let
         (sccs, _stack) = runST $ do
             ns <- newArray (length g) 0
-            ys <- newArray (length g) undefined
-            runReaderT (go0 ([], []) [0..(length g - 1)]) (ns, ys)
+            ys <- newArray (length g) (error "impossible")
+
+            sccfold ([], []) [0..(length g - 1)]
+                `runReaderT` (ns, ys)
     in
         sccs
     where
-        go0 :: ([SCC b], [Vertex]) -> [Vertex] -> SccStep s b
-        go0 = foldrM (\v s -> whenInteresting go2 s v)
+        sccfold :: ([SCC b], [Vertex]) -> [Vertex] -> SccStep s b
+        sccfold = foldrM (\v s -> whenInteresting go s v)
 
         whenInteresting f s v = do
             (ns, _) <- ask
@@ -34,15 +36,15 @@ sccmap f (Graph g xs) =
                 then f s v
                 else pure s
         
-        go2 :: ([SCC b], [Vertex]) -> Vertex -> SccStep s b
-        go2 (sccs, stack) v = do
+        go :: ([SCC b], [Vertex]) -> Vertex -> SccStep s b
+        go (sccs, stack) v = do
             (ns, ys) <- ask
             let depth = length stack + 1
             writeArray ns v depth
             let y = f (xs `indexArray` v)
             writeArray ys v y
             let ws = g `indexArray` v
-            (sccs', stack') <- go0 (sccs, v:stack) ws
+            (sccs', stack') <- sccfold (sccs, v:stack) ws
             ns' <- traverse (readArray ns) ws
             let n' = foldr min depth ns'
             writeArray ns v n'
