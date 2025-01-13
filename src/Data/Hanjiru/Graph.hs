@@ -6,12 +6,14 @@ import Data.Foldable
 import Data.List.NonEmpty (NonEmpty ((:|)))
 import Data.Primitive.Array
 
--- | Strongly connected component of a graph.
+-- | Strongly connected component.
 data SCC a = Trivial a Vertex | Cycle a (NonEmpty Vertex)
     deriving (Eq, Show)
 
--- | SCC via a variation of Tarjan's algorithm.
---   Modified to compute transitive closures of functions at the same time.
+-- | \(O(V + E)\). Apply a function to each vertex, and combine the results of reachable
+--   vertices. [Citation](https://doi.org/10.1145/69622.357187)
+--
+-- Reachability analysis necessarily computes SCCs, which are then combined into one value.
 sccmap :: forall a b. Monoid b => (a -> b) -> Graph a -> [SCC b]
 sccmap f (Graph g xs) =
     let
