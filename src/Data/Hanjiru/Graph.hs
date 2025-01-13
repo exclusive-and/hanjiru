@@ -39,18 +39,22 @@ sccmap f (Graph g xs) =
         go :: ([SCC b], [Vertex]) -> Vertex -> SccStep s b
         go (sccs, stack) v = do
             (ns, ys) <- ask
+            -- 1. Compute preorder and immediate result
             let depth = length stack + 1
             writeArray ns v depth
             let y = f (xs `indexArray` v)
             writeArray ys v y
+            -- 2. Recurse on adjacent vertices
             let ws = g `indexArray` v
             (sccs', stack') <- sccfold (sccs, v:stack) ws
+            -- 3. Compute new preorder and combined result
             ns' <- traverse (readArray ns) ws
             let n' = foldr min depth ns'
             writeArray ns v n'
             ys' <- traverse (readArray ys) ws
             let y' = foldr (<>) y ys'
             writeArray ys v y'
+            -- 4. Create a new SCC if one is detected
             if n' == depth
                 then consScc [] v (sccs', stack')
                 else pure (sccs', stack')
