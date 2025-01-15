@@ -7,13 +7,13 @@ import Data.List.NonEmpty (NonEmpty ((:|)))
 import Data.Primitive.Array
 
 -- | Strongly connected component.
+
 data SCC a = Trivial a Vertex | Cycle a (NonEmpty Vertex)
     deriving (Eq, Show)
 
--- | \(O(V + E)\). Apply a function to each vertex, and combine the results of reachable
---   vertices. [Citation](https://doi.org/10.1145/69622.357187)
---
--- Reachability analysis necessarily computes SCCs, which are then combined into one value.
+-- | \(O(V + E)\). Apply a function to each vertex, and combine results of reachable vertices
+--   [[DeRemer, 1982](https://doi.org/10.1145/69622.357187)].
+
 sccmap :: forall a b. Monoid b => (a -> b) -> Graph a -> [SCC b]
 sccmap f (Graph g xs) =
     let
@@ -26,7 +26,7 @@ sccmap f (Graph g xs) =
     in
         sccs
     where
-        sccfold :: ([SCC b], [Vertex]) -> [Vertex] -> SccStep s b
+        sccfold :: ([SCC b], [Vertex]) -> [Vertex] -> SccInfo s b
         sccfold = foldrM (\v s -> whenInteresting go s v)
 
         whenInteresting f s v = do
@@ -36,7 +36,7 @@ sccmap f (Graph g xs) =
                 then f s v
                 else pure s
         
-        go :: ([SCC b], [Vertex]) -> Vertex -> SccStep s b
+        go :: ([SCC b], [Vertex]) -> Vertex -> SccInfo s b
         go (sccs, stack) v = do
             (ns, ys) <- ask
             -- 1. Compute preorder and immediate result
@@ -71,14 +71,25 @@ sccmap f (Graph g xs) =
                         | otherwise -> pure (Cycle y (x :| scc) : sccs, stack)
                 else consScc (x:scc) v (sccs, stack)
 
-type SccStep s a =
+-- | The information used in the SCC-finding algorithm:
+--
+--    * Array of vertex preorder numbers.
+--    * Array of partial results for each vertex.
+--    * List of SCCs that have been found so far.
+--    * Stack of vertices representing the path that the algorithm is currently exploring.
+
+type SccInfo s a =
     ReaderT (MutableArray s Int, MutableArray s a)
             (ST s)
             ([SCC a], [Vertex])
 
-type Vertex = Int
+-- | Directed graph.
 
 data Graph a = Graph
-    { outs  :: Array [Vertex]
-    , nodes :: Array a
+    { outs  :: Array [Vertex]   -- ^ Vertices reached by outgoing edges.
+    , nodes :: Array a          -- ^ Data nodes.
     }
+
+-- | Vertex in a 'Graph'.
+
+type Vertex = Int
