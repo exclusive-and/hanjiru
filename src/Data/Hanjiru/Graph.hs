@@ -93,3 +93,13 @@ data Graph a = Graph
 -- | Vertex in a 'Graph'.
 
 type Vertex = Int
+
+-- | Construct a graph from adjacency lists.
+
+fromAdjacencies :: [[Vertex]] -> Graph Vertex
+fromAdjacencies adjs =
+    let
+        g = arrayFromList adjs
+        xs = arrayFromList [0..length g]
+    in
+        Graph g xs
