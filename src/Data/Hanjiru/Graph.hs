@@ -19,7 +19,7 @@ sccmap f (Graph g xs) =
     let
         (sccs, _stack) = runST $ do
             ns <- newArray (length g) 0
-            ys <- newArray (length g) (error "impossible")
+            ys <- newArray (length g) mempty
 
             sccfold ([], []) [0..(length g - 1)]
                 `runReaderT` (ns, ys)
@@ -39,22 +39,22 @@ sccmap f (Graph g xs) =
         go :: ([SCC b], [Vertex]) -> Vertex -> SccInfo s b
         go (sccs, stack) v = do
             (ns, ys) <- ask
-            -- 1. Compute preorder and immediate result
+            -- 1. Compute initial preorder number
             let depth = length stack + 1
             writeArray ns v depth
-            let y = f (xs `indexArray` v)
-            writeArray ys v y
             -- 2. Recurse on adjacent vertices
             let ws = g `indexArray` v
             (sccs', stack') <- sccfold (sccs, v:stack) ws
-            -- 3. Compute new preorder and combined result
+            -- 3. Compute new preorder
             ns' <- traverse (readArray ns) ws
             let n' = foldr min depth ns'
             writeArray ns v n'
+            -- 4. Compute immediate and combined results
+            let y = f (xs `indexArray` v)
             ys' <- traverse (readArray ys) ws
             let y' = foldr (<>) y ys'
             writeArray ys v y'
-            -- 4. Create a new SCC if one is detected
+            -- 5. Create a new SCC if one is detected
             if n' == depth
                 then consScc [] v (sccs', stack')
                 else pure (sccs', stack')
