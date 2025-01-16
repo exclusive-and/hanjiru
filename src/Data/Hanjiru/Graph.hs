@@ -14,7 +14,7 @@ data SCC a = Trivial a Vertex | Cycle a (NonEmpty Vertex)
 -- | \(O(V + E)\). Apply a function to each vertex, and combine results of reachable vertices
 --   [[DeRemer, 1982](https://doi.org/10.1145/69622.357187)].
 
-sccmap :: forall a b. Monoid b => (a -> b) -> Graph a -> [SCC b]
+sccmap :: forall b a. Monoid b => (a -> b) -> Graph a -> [SCC b]
 sccmap f (Graph g xs) =
     let
         (sccs, _stack) = runST $ do
