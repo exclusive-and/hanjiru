@@ -20,9 +20,7 @@ sccmap f (Graph g xs) =
         (sccs, _stack) = runST $ do
             ns <- newArray (length g) 0
             ys <- newArray (length g) mempty
-
-            sccfold ([], []) [0..(length g - 1)]
-                `runReaderT` (ns, ys)
+            sccfold ([], []) [0..(length g - 1)] `runReaderT` (ns, ys)
     in
         sccs
     where
