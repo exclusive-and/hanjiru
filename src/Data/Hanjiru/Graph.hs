@@ -11,10 +11,33 @@ import Data.Primitive.Array
 data SCC a = Trivial a Vertex | Cycle a (NonEmpty Vertex)
     deriving (Eq, Show)
 
--- | \(O(V + E)\). Apply a function to each vertex, and combine results of reachable vertices
---   [[DeRemer, 1982](https://doi.org/10.1145/69622.357187)].
+-- | \(O(V + E)\). Map each vertex into a monoid, and combine the results of reachable
+--   vertices with @('<>')@. Finds SCCs during reachability analysis.
+--
+-- === __Examples__
+--
+-- ==== Combining via [] and Counting Path Multiplicities
+--
+-- >>> let g = fromAdjacencies [[1, 2], [2], []]
+-- >>> sccmap (\x -> [x]) g
+-- [Trivial [2,1,2,0] 0,Trivial [2,1] 1,Trivial [2] 2]
+--
+-- In the example above, we see that the algorithm can count the total number of paths from
+-- one vertex to another. If there are \(n\) different paths from \(A\) that reach \(B\),
+-- then the combined result at \(A\) will feature \(n\) copies of whatever value was computed
+-- for \(B\).
+--
+-- ==== Computing Reaching Sets
+--
+-- >>> import Data.Set qualified as Set
+-- >>> sccmap Set.singleton g
+-- [Trivial (fromList [0,1,2]) 0,Trivial (fromList [1,2]) 1,Trivial (fromList [2]) 2]
 
 sccmap :: forall b a. Monoid b => (a -> b) -> Graph a -> [SCC b]
+
+-- This implementation was derived from the outline of the @Digraph@ algorithm given in
+-- [[DeRemer, 1982](https://doi.org/10.1145/69622.357187)].
+
 sccmap f (Graph g xs) =
     let
         (sccs, _stack) = runST $ do
