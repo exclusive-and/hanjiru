@@ -10,14 +10,17 @@ import Data.Set (Set)
 import Data.Set qualified as Set
 
 -- | A grammatical production rule from the BNF.
+
 data Rule a = Rule a (NonEmpty a)
     deriving (Eq, Ord, Show)
 
 -- | The lazy expansion of a token. Likely infinite, so make extra sure that code
 --   dealing with these terminates!
+
 data View a = Term a | NonTerm a (NonEmpty (Alt a))
 
 -- | Two Views are equal only if they view the exact same token.
+
 instance Eq a => Eq (View a) where
     Term    tok0    ==  Term    tok1    = tok0 == tok1
     NonTerm tok0 _  ==  NonTerm tok1 _  = tok0 == tok1
@@ -25,6 +28,7 @@ instance Eq a => Eq (View a) where
 
 -- | Views of terminal symbols are /always/ less than those of non-terminals.
 --   Otherwise, we follow the same order as the viewed tokens.
+
 instance Ord a => Ord (View a) where
     compare x y =
         case (x, y) of
@@ -39,11 +43,13 @@ instance Show a => Show (View a) where
 
 -- | The token expansion of the RHS of a single rule. Represents one potential parse
 --   of a non-terminal symbol.
+
 newtype Alt a = Alt (NonEmpty (View a))
     deriving (Eq, Ord, Show)
 
 -- | Expand a token into its 'View'. The expansion is transitive: if a token expands into
 --   more tokens, then those tokens are also expanded.
+
 view :: Ord a => Map a (NonEmpty (Rule a)) -> a -> View a
 view grammar = goView where
     goView tok =
@@ -64,6 +70,7 @@ symbol (NonTerm tok _)  = tok
 --
 -- Includes the expanded form of the rule being parsed, along with a list of the tokens
 -- still needed to complete the parse.
+
 data Item a = Item a (Alt a) [View a]
     deriving (Eq, Ord)
 
@@ -76,7 +83,6 @@ toRule (Item tok (Alt toks) _) = Rule tok (go <$> toks)
         go (Term tok)       = tok
         go (NonTerm tok _)  = tok
 
--- | .
 uncons :: Item a -> Maybe (View a, Item a)
 uncons (Item tok alt xs) =
     case xs of
@@ -84,6 +90,7 @@ uncons (Item tok alt xs) =
         x : xs' -> Just (x, Item tok alt xs')
 
 -- | Apply a function to non-terminal symbols at the head of an item.
+
 nonterm :: b -> (a -> NonEmpty (Alt a) -> [View a] -> b) -> Item a -> b
 nonterm b f (Item _ _ xs) = list b go xs
     where
