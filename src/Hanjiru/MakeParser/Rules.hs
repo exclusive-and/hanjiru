@@ -74,6 +74,9 @@ symbol (NonTerm tok _)  = tok
 data Item a = Item a (Alt a) [View a]
     deriving (Eq, Ord)
 
+instance Show a => Show (Item a) where
+    show (Item tok _ xs) = "<" ++ show tok ++ " => " ++ show xs ++ ">"
+
 toItem :: a -> Alt a -> NonEmpty (View a) -> Item a
 toItem tok alt xs = Item tok alt (NE.toList xs)
 
@@ -97,5 +100,9 @@ nonterm b f (Item _ _ xs) = list b go xs
         go (Term _)             = const b
         go (NonTerm tok alts)   = f tok alts
 
-instance Show a => Show (Item a) where
-    show (Item tok _ xs) = "<" ++ show tok ++ " => " ++ show xs ++ ">"
+-- | Expand the next expected symbol at the front of an item into new items.
+
+expandFront :: Item a -> [Item a]
+expandFront = nonterm [] (\tok alts _ -> map (go tok) $ NE.toList alts)
+    where
+        go tok alt@(Alt xs) = toItem tok alt xs

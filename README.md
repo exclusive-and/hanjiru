@@ -7,5 +7,7 @@ Hanjiru is a package for creating and working with LR parsers.
 
 # Capabilities
 
-- [ ] Construct LR parsing state machines from grammars in BNF.
+- [x] Construct LR(0) parse tables from grammars.
+- [ ] Efficiently construct LALR(1) parse tables from LR(0) tables.
+- [ ] Bootstrap by parsing grammar files.
 - [x] Parse sequences of tokens using Tomita's GLR algorithm.
