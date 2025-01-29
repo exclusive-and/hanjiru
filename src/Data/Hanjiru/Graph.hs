@@ -48,17 +48,17 @@ sccmap f (Graph g xs) =
         sccs
     where
         sccfold :: ([SCC b], [Vertex]) -> [Vertex] -> SccInfo s b
-        sccfold = foldrM (\v s -> whenInteresting go s v)
+        sccfold = foldrM (whenInteresting go)
 
-        whenInteresting f s v = do
+        whenInteresting f v s = do
             (ns, _) <- ask
             n <- ns `readArray` v
             if n == 0
-                then f s v
+                then f v s
                 else pure s
         
-        go :: ([SCC b], [Vertex]) -> Vertex -> SccInfo s b
-        go (sccs, stack) v = do
+        go :: Vertex -> ([SCC b], [Vertex]) -> SccInfo s b
+        go v (sccs, stack) = do
             (ns, ys) <- ask
             -- 1. Compute initial preorder number
             let depth = length stack + 1
