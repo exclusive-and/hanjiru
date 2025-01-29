@@ -51,6 +51,7 @@ library
         Data.Hanjiru.Fix
         Data.Hanjiru.Graph
         Data.Hanjiru.List
+        Data.Hanjiru.Strategies
     -- other-extensions:
     build-depends:
         base ^>=4.20,

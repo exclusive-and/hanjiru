@@ -1,7 +1,6 @@
 module Hanjiru.MakeParser.LR0 where
 
-import Control.Monad.Trans.Writer
-import Data.Foldable (foldrM)
+import Data.Hanjiru.Strategies
 import Data.List qualified as List
 import Data.List.NonEmpty qualified as NE
 import Data.Map (Map)
@@ -39,13 +38,3 @@ successors (LR items) =
             [ (x, LR (Set.singleton $ Item tok alt xs))
             | Item tok alt (x:xs) <- Set.toList items
             ]
-
--- | Breadth-first search via a monadic function.
-
-bfsViaM :: Monad m => (k -> BfsInfo k m) -> [k] -> m ()
-bfsViaM f = go
-    where
-        go [] = pure ()
-        go xs = execWriterT (mapM_ f xs) >>= go
-
-type BfsInfo k m = WriterT [k] m ()
