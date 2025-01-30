@@ -51,6 +51,7 @@ library
         Data.Hanjiru.Fix
         Data.Hanjiru.Graph
         Data.Hanjiru.List
+        Data.Hanjiru.MapGraph
         Data.Hanjiru.Strategies
     -- other-extensions:
     build-depends:
