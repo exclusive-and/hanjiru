@@ -73,4 +73,4 @@ collectShiftsAndGotos = Map.foldrWithKey go (mempty, mempty)
         go (v, e) w (shifts, gotos) =
             case e of
                 NonTerm tok _   -> (shifts, Map.insert (v, tok) w gotos)
-                Term tok        -> (Map.insert v [Shift tok w] shifts, gotos)
+                Term tok        -> (Map.insertWith (<>) v [Shift tok w] shifts, gotos)
