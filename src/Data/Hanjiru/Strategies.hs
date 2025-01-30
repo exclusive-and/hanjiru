@@ -13,4 +13,6 @@ bfsM :: (Monoid a, Monad m) => (k -> WriterT [k] m a) -> [k] -> m a
 bfsM f = go mempty
     where
         go acc [] = pure acc
-        go acc xs = runWriterT (mconcat <$> mapM f xs) >>= uncurry go
+        go acc xs = do
+            (acc', ys) <- runWriterT (mconcat <$> mapM f xs)
+            go (acc <> acc') ys
