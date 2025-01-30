@@ -41,12 +41,16 @@ instance Ord e => Monoid (MapGraph e v) where
 -- | Unfold a 'MapGraph' from an initial vertex and a successor function.
 
 unfold :: forall v e. (Ord v, Ord e) => (v -> [(e, v)]) -> v -> MapGraph e v
-unfold f start = (bfsM go =<< initial) `evalState` (0, mempty)
+unfold f start = (bfsM visit =<< initial) `evalState` (0, mempty)
     where
-        go :: (v, Int) -> Identify v (MapGraph e v)
-        go (x, v) = do
-            ws <- traverse (runKleisli $ second $ Kleisli identify) (f x)
-            let edges = [ ((v, e), w) | (e, w) <- ws ]
-            pure $ MapGraph (Map.fromList edges) (Map.singleton v x)
+        visit :: (v, Int) -> Identify v (MapGraph e v)
+        visit (x, v) = do
+            ws <- traverse (go v) (f x)
+            pure $ MapGraph (Map.fromList ws) (Map.singleton v x)
+
+        go :: Vertex -> (e, v) -> Identify v ((Vertex, e), Vertex)
+        go v (e, w) = do
+            w' <- identify w
+            pure ((v, e), w')
         
         initial = execWriterT $ identify start
