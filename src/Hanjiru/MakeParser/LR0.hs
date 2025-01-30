@@ -53,16 +53,16 @@ type GotoMap a = Map (Int, a) Int
 makeLr0 :: Ord a => Map a (NonEmpty (Rule a)) -> Rule a -> (ActionMap a, GotoMap a)
 makeLr0 grammar goal =
     let
-        MapGraph edges nodes = unfold (Map.toList . successors) initial
+        MapGraph edges nodes = unfold (Map.toList . successors) $ startLr0 grammar goal
     in
         first (Map.unionWith (<>) (Map.map reductions nodes)) $ collectShiftsAndGotos edges
-    where
-        initial =
-            let
-                Rule tok xs = goal
-                xs' = view grammar <$> xs
-            in
-                closure $ LR $ Set.singleton $ toItem tok (Alt xs') xs'
+
+startLr0 :: Ord a => Map a (NonEmpty (Rule a)) -> Rule a -> LR a
+startLr0 grammar (Rule tok xs) =
+    let
+        xs' = view grammar <$> xs
+    in
+        closure $ LR $ Set.singleton $ toItem tok (Alt xs') xs'
 
 reductions :: LR a -> [Action a]
 reductions (LR items) = [ Reduce (toRule item) | item@(Item _ _ []) <- Set.toList items ]
