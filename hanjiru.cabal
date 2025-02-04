@@ -1,0 +1,63 @@
+cabal-version:      3.4
+name:               hanjiru
+version:            0.1.0.0
+-- synopsis:
+-- description:
+license:            BSD-3-Clause
+license-file:       LICENSE
+author:             exclusive-and
+maintainer:         exclusiveandgate@gmail.com
+-- copyright:
+build-type:         Simple
+extra-doc-files:    CHANGELOG.md
+-- extra-source-files:
+
+common warnings
+    ghc-options:
+        -Wall
+        -Wno-name-shadowing
+        -Wno-unused-imports
+        -Wno-unused-matches
+
+library
+    import:           warnings
+    hs-source-dirs:   src
+    default-language: Haskell2010
+
+    default-extensions:
+        DeriveFoldable
+        GeneralizedNewtypeDeriving
+        ImportQualifiedPost
+        LambdaCase
+        MultiWayIf
+        OverloadedStrings
+        PatternSynonyms
+        RankNTypes
+        ScopedTypeVariables
+        StandaloneDeriving
+        TupleSections
+        TypeApplications
+    exposed-modules:
+        -- Hanjiru.MakeParser
+        -- Hanjiru.MakeParser.Lookahead
+        Hanjiru.MakeParser.LR0
+        Hanjiru.MakeParser.Rules
+        -- Hanjiru.Tomita
+        -- Hanjiru.Tomita.Parse
+        -- Hanjiru.Tomita.Reduce
+        -- Hanjiru.Tomita.Shift
+        -- Hanjiru.Tomita.Stack
+    other-modules:
+        Data.Hanjiru.Fix
+        Data.Hanjiru.Graph
+        Data.Hanjiru.List
+        Data.Hanjiru.MapGraph
+        Data.Hanjiru.Strategies
+    -- other-extensions:
+    build-depends:
+        base ^>=4.20,
+        containers,
+        mtl,
+        prettyprinter,
+        primitive,
+        transformers
