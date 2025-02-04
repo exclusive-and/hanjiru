@@ -1,9 +1,12 @@
 module Hanjiru.MakeParser.LR0 where
 
 import Control.Arrow
+import Control.Monad.Trans.Class
 import Control.Monad.Trans.State
+import Control.Monad.Trans.Writer
 import Data.Foldable (foldrM)
 import Data.Hanjiru.MapGraph
+import Data.Hanjiru.Strategies
 import Data.List qualified as List
 import Data.List.NonEmpty (NonEmpty)
 import Data.List.NonEmpty qualified as NE
@@ -22,13 +25,15 @@ newtype LR a = LR (Set (Item a))
 -- | Compute the closure of an LR(0) parse state via breadth-first search.
 
 closure :: Ord a => LR a -> LR a
-closure (LR lr) = LR (go lr worklist0)
+closure (LR lr) = bfsM go worklist0 `execState` LR lr
     where
-        go acc [] = acc
-        go acc (item:worklist) =
-            if item `Set.member` acc
-                then go acc worklist
-                else go (Set.insert item acc) (expandFront item ++ worklist)
+        go item = do
+            LR items <- lift get
+            if item `Set.member` items
+                then pure ()
+                else do
+                    lift $ put $ LR $ Set.insert item items
+                    tell $ expandFront item
 
         worklist0 = concatMap expandFront $ Set.toList lr
 
