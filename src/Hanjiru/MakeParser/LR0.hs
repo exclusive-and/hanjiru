@@ -16,6 +16,7 @@ import Data.Maybe
 import Data.Set (Set)
 import Data.Set qualified as Set
 import Hanjiru.MakeParser.Rules
+import Hanjiru.Tables
 
 -- | An LR(0) parse state.
 
@@ -25,14 +26,14 @@ newtype LR a = LR (Set (Item a))
 -- | Compute the closure of an LR(0) parse state via breadth-first search.
 
 closure :: Ord a => LR a -> LR a
-closure (LR lr) = bfsM go worklist0 `execState` LR lr
+closure (LR lr) = LR (bfsM go worklist0 `execState` lr)
     where
         go item = do
-            LR items <- lift get
+            items <- lift get
             if item `Set.member` items
                 then pure ()
                 else do
-                    lift $ put $ LR $ Set.insert item items
+                    lift $ put $ Set.insert item items
                     tell $ expandFront item
 
         worklist0 = concatMap expandFront $ Set.toList lr
@@ -48,19 +49,14 @@ successors (LR items) =
             | Item tok alt (x:xs) <- Set.toList items
             ]
 
-data Action a   = Shift  a Int
-                | Reduce (Rule a)
-
-type ActionMap a = Map Int [Action a]
-
-type GotoMap a = Map (Int, a) Int
-
-makeLr0 :: Ord a => Map a (NonEmpty (Rule a)) -> Rule a -> (ActionMap a, GotoMap a)
-makeLr0 grammar goal =
+makeLr0 :: (Ord a, Show a) => Grammar a -> (ActionTable a, GotoTable a)
+makeLr0 (Grammar grammar goal terms nonterms) =
     let
         MapGraph edges nodes = unfold (Map.toList . successors) $ startLr0 grammar goal
+        reductions = Map.map collectReductions nodes
+        (shifts, gotos) = collectShiftsAndGotos edges
     in
-        first (Map.unionWith (<>) (Map.map reductions nodes)) $ collectShiftsAndGotos edges
+        (actionTable goal (Map.map (map snd) reductions) shifts, gotoTable gotos)
 
 startLr0 :: Ord a => Map a (NonEmpty (Rule a)) -> Rule a -> LR a
 startLr0 grammar (Rule tok xs) =
@@ -69,13 +65,16 @@ startLr0 grammar (Rule tok xs) =
     in
         closure $ LR $ Set.singleton $ toItem tok (Alt xs') xs'
 
-reductions :: LR a -> [Action a]
-reductions (LR items) = [ Reduce (toRule item) | item@(Item _ _ []) <- Set.toList items ]
+collectReductions :: LR a -> [(Rule a, Reduction a)]
+collectReductions (LR items) =
+    [ (toRule item, MkReduction tok (length xs))
+    | item@(Item tok (Alt xs) []) <- Set.toList items
+    ]
 
-collectShiftsAndGotos :: Ord a => Map (Int, View a) Int -> (ActionMap a, GotoMap a)
+collectShiftsAndGotos :: Ord a => Map (Int, View a) Int -> (GotoMap a, GotoMap a)
 collectShiftsAndGotos = Map.foldrWithKey go (mempty, mempty)
     where
         go (v, e) w (shifts, gotos) =
             case e of
                 NonTerm tok _   -> (shifts, Map.insert (v, tok) w gotos)
-                Term tok        -> (Map.insertWith (<>) v [Shift tok w] shifts, gotos)
+                Term tok        -> (Map.insert (v, tok) w shifts, gotos)

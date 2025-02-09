@@ -1,19 +1,27 @@
 module Hanjiru.Tomita where
 
-import Hanjiru.Token
+import Control.Monad (foldM)
+import Control.Monad.Writer
+import Data.List (sort)
+import Hanjiru.Tables
 import Hanjiru.Tomita.Parse
-import Hanjiru.Tomita.Reduce (Reduction, Reduced(..))
+import Hanjiru.Tomita.Reduce (Reduced(..))
 import Hanjiru.Tomita.Reduce qualified as Hanjiru
 import Hanjiru.Tomita.Shift  qualified as Hanjiru
 import Hanjiru.Tomita.Stack
 
-import Control.Monad.Writer
-import Data.List (sort)
-
-parse :: forall a. Eq a => ActionTable -> GotoTable -> [Token] -> [ParseResult a]
+parse :: forall a token.
+       (Ord token, Eq a)
+    => ActionTable token
+    -> GotoTable token
+    -> [token]
+    -> [ParseResult token a]
 parse action goto = execWriter . foldM tomita [ParseStack 0 0 []]
     where
-    tomita :: [ParseStack a] -> Token -> Writer [ParseResult a] [ParseStack a]
+    tomita ::
+           [ParseStack token a]
+        -> token
+        -> Writer [ParseResult token a] [ParseStack token a]
     tomita [] _tok            = pure []
     tomita (stack:stacks) tok =
         case action (top stack) tok of
@@ -42,18 +50,9 @@ parse action goto = execWriter . foldM tomita [ParseStack 0 0 []]
     nextState (Reduced state tok parse', stack) =
         (Reduced (goto state tok) tok parse', stack)
 
-data ParseResult a =
-      ParseOk [Parse a]
-    | ParseError (ParseStack a)
+data ParseResult token a =
+      ParseOk [Parse token a]
+    | ParseError (ParseStack token a)
     deriving Show
 
-data Action =
-      Accept
-    | Error
-    | Reduce [Reduction]
-    | Shift  [Reduction] Int
-
 {- *** Action tables *** -}
-
-type ActionTable    = Int -> Token -> Action
-type GotoTable      = Int -> Token -> Int

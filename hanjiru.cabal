@@ -42,11 +42,12 @@ library
         -- Hanjiru.MakeParser.Lookahead
         Hanjiru.MakeParser.LR0
         Hanjiru.MakeParser.Rules
-        -- Hanjiru.Tomita
-        -- Hanjiru.Tomita.Parse
-        -- Hanjiru.Tomita.Reduce
-        -- Hanjiru.Tomita.Shift
-        -- Hanjiru.Tomita.Stack
+        Hanjiru.Tables
+        Hanjiru.Tomita
+        Hanjiru.Tomita.Parse
+        Hanjiru.Tomita.Reduce
+        Hanjiru.Tomita.Shift
+        Hanjiru.Tomita.Stack
     other-modules:
         Data.Hanjiru.Fix
         Data.Hanjiru.Graph
