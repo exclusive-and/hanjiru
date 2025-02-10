@@ -45,10 +45,10 @@ prettyParse x =
         Production tok _ xs -> prettyProduction tok xs
         Ambiguity  tok   xs -> prettyAmbiguity  tok xs
     where
-    prettyProduction tok xs =
-        pretty tok <> line <> (indent 4 $ vsep $ map prettyParse xs)
+        prettyProduction tok xs =
+            pretty tok <> line <> (indent 4 $ vsep $ map prettyParse xs)
     
-    prettyAmbiguity tok xs =
-        pretty tok <+> lbracket <> line
-            <> (indent 4 $ vsep $ map prettyParse xs)
-            <> rbracket <> line
+        prettyAmbiguity tok xs =
+            pretty tok <+> lbracket <> line
+                <> (indent 4 $ vsep $ map prettyParse xs)
+                <> rbracket <> line

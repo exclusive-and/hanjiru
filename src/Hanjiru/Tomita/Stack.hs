@@ -16,8 +16,7 @@ data ParseTail token a = ParseTail (Parse token a) (ParseStack token a)
     deriving (Eq, Ord, Show)
 
 peek :: ParseStack token a -> [Parse token a]
-peek (ParseStack _ _ tails) =
-    map (\(ParseTail parse _) -> parse) tails
+peek (ParseStack _ _ tails) = map (\(ParseTail parse _) -> parse) tails
 
 top :: ParseStack token a -> Int
 top (ParseStack _ state _) = state
@@ -26,8 +25,7 @@ height :: ParseStack token a -> Int
 height (ParseStack h _ _) = h
 
 push :: Int -> Int -> Parse token a -> ParseStack token a -> ParseStack token a
-push _ state parse stack =
-    ParseHead (height stack + 1) state parse stack
+push _ state parse stack = ParseHead (height stack + 1) state parse stack
 
 consumeN ::
        Int

@@ -10,7 +10,6 @@ shift uniq state tok stack =
     push uniq state (Literal tok) stack
 
 merge :: [ParseStack token a] -> [ParseStack token a]
--- short circuit: no stacks --> nothing to merge
 merge []     = []
 merge stacks =
     let
