@@ -20,6 +20,9 @@ data Reduction token =
 -}
     deriving (Eq, Ord)
 
+toReduction :: Rule a -> Reduction a
+toReduction (Rule tok xs) = MkReduction tok (length xs)
+
 type ActionTable token    = Int -> token -> Action token
 type GotoTable   token    = Int -> token -> Int
 

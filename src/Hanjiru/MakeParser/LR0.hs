@@ -49,14 +49,18 @@ successors (LR items) =
             | Item tok alt (x:xs) <- Set.toList items
             ]
 
+-- | Construct LR(0) action and goto tables from a grammar.
+
 makeLr0 :: (Ord a, Show a) => Grammar a -> (ActionTable a, GotoTable a)
-makeLr0 (Grammar grammar goal terms nonterms) =
+makeLr0 (Grammar grammar goal) =
     let
         MapGraph edges nodes = unfold (Map.toList . successors) $ startLr0 grammar goal
         reductions = Map.map collectReductions nodes
         (shifts, gotos) = collectShiftsAndGotos edges
     in
-        (actionTable goal (Map.map (map snd) reductions) shifts, gotoTable gotos)
+        (actionTable goal (Map.map (map toReduction) reductions) shifts, gotoTable gotos)
+
+-- | Compute the initial LR(0) state to explore from.
 
 startLr0 :: Ord a => Map a (NonEmpty (Rule a)) -> Rule a -> LR a
 startLr0 grammar (Rule tok xs) =
@@ -65,11 +69,9 @@ startLr0 grammar (Rule tok xs) =
     in
         closure $ LR $ Set.singleton $ toItem tok (Alt xs') xs'
 
-collectReductions :: LR a -> [(Rule a, Reduction a)]
+collectReductions :: LR a -> [Rule a]
 collectReductions (LR items) =
-    [ (toRule item, MkReduction tok (length xs))
-    | item@(Item tok (Alt xs) []) <- Set.toList items
-    ]
+    [ toRule item | item@(Item _ _ []) <- Set.toList items ]
 
 collectShiftsAndGotos :: Ord a => Map (Int, View a) Int -> (GotoMap a, GotoMap a)
 collectShiftsAndGotos = Map.foldrWithKey go (mempty, mempty)

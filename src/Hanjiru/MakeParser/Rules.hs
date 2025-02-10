@@ -14,11 +14,11 @@ import Data.Set qualified as Set
 data Rule a = Rule a (NonEmpty a)
     deriving (Eq, Ord, Show)
 
+-- | The grammar of a language.
+
 data Grammar a =
         Grammar (Map a (NonEmpty (Rule a))) -- Map of rules
                 (Rule a)                    -- Goal rule
-                [a]                         -- Terminal symbols
-                [a]                         -- Non-terminal symbols
     deriving Show
 
 -- | The lazy expansion of a token. Likely infinite, so make extra sure that code
