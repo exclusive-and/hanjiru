@@ -1,56 +1,54 @@
 module Hanjiru.Tomita.Parse where
 
-import Hanjiru.Token
-
 import Prettyprinter
 
 -- | A 'Parse' is the interpretation(s) of an input according to the grammar.
-data Parse a =
+
+data Parse token a =
     -- | A literal token taken directly from the input.
-      Literal       Token
+      Literal       token
     
     -- | A non-terminal symbol that comes from the application of a production rule.
-    | Production    Token
+    | Production    token
                     Int
-                    [Parse a]
+                    [Parse token a]
     
     -- | A symbol with multiple ambiguous interpretations.
-    | Ambiguity     Token
-                    [Parse a]
-    deriving Eq
+    | Ambiguity     token
+                    [Parse token a]
+    deriving (Eq, Ord)
 
-symbol :: Parse a -> Token
+symbol :: Parse token a -> token
 symbol x =
     case x of
         Literal    tok      -> tok
         Production tok _ _  -> tok
         Ambiguity  tok   _  -> tok
 
-ambiguity :: Parse a -> Parse a -> Parse a
+ambiguity :: Parse token a -> Parse token a -> Parse token a
 ambiguity x y =
     case y of
         Literal    tok      -> Ambiguity tok [x, y]
         Production tok _ _  -> Ambiguity tok [x, y]
         Ambiguity  tok   ys -> Ambiguity tok (x:ys)
 
-instance Pretty (Parse a) where
+instance Pretty token => Pretty (Parse token a) where
     pretty = prettyParse
 
-instance Show (Parse a) where
+instance Pretty token => Show (Parse token a) where
     show = show . prettyParse
 
-prettyParse :: Parse a -> Doc ann
+prettyParse :: Pretty token => Parse token a -> Doc ann
 prettyParse x =
     case x of
-        Literal    tok      -> viaShow tok
+        Literal    tok      -> pretty tok
         Production tok _ xs -> prettyProduction tok xs
         Ambiguity  tok   xs -> prettyAmbiguity  tok xs
     where
-    prettyProduction tok xs =
-        viaShow tok <> line
-            <> (indent 4 $ vsep $ map prettyParse xs)
+        prettyProduction tok xs =
+            pretty tok <> line <> (indent 4 $ vsep $ map prettyParse xs)
     
-    prettyAmbiguity tok xs =
-        viaShow tok <+> lbracket <> line
-            <> (indent 4 $ vsep $ map prettyParse xs)
-            <> rbracket <> line
+        prettyAmbiguity tok xs =
+            pretty tok <+> lbracket <> line
+                <> (indent 4 $ vsep $ map prettyParse xs)
+                <> rbracket <> line

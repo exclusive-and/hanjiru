@@ -21,6 +21,6 @@ library
     hs-source-dirs:   src
     exposed-modules:
         Example.Actions
-    build-depends:    base ^>=4.17.0.0,
+    build-depends:    base ^>=4.20.0.0,
                       hanjiru-glr,
                       tomita-glr-example-token-impl
