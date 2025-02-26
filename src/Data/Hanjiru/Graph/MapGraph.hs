@@ -1,4 +1,4 @@
-module Data.Hanjiru.MapGraph where
+module Data.Hanjiru.Graph.MapGraph where
 
 import Control.Arrow
 import Control.Monad.Trans.Class

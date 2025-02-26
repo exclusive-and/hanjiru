@@ -5,7 +5,7 @@ import Control.Monad.Trans.Class
 import Control.Monad.Trans.State
 import Control.Monad.Trans.Writer
 import Data.Foldable (foldrM)
-import Data.Hanjiru.MapGraph
+import Data.Hanjiru.Graph.MapGraph
 import Data.Hanjiru.Strategies
 import Data.List qualified as List
 import Data.List.NonEmpty (NonEmpty)
