@@ -3,23 +3,31 @@
         nixpkgs.url = "nixpkgs/nixos-24.11";
     };
 
-    outputs = {nixpkgs, self}:
+    outputs = { nixpkgs, self }:
         let
+            overlay = import ./overlay.nix;
+
             system = "x86_64-linux";
+
             pkgs = import nixpkgs {
+                overlays = [ overlay ];
                 inherit system;
             };
-            haskell = pkgs.haskell.packages.ghc9101;
-            hanjiru = haskell.callPackage ./hanjiru.nix {};
+
+            inherit (pkgs) haskellPackages;
         in
-            {
-                packages.${system}.default = hanjiru;
-                devShells.${system}.default = haskell.shellFor {
-                    packages = _: [ hanjiru ];
-                    nativeBuildInputs = [
-                        haskell.cabal-install
-                        haskell.haskell-language-server
-                    ];
-                };
+        {
+            overlays.haskellPackages = overlay;
+
+            packages.${system}.default = haskellPackages.hanjiru;
+
+            devShells.${system}.default = haskellPackages.shellFor {
+                packages = final: [ final.hanjiru ];
+                    
+                nativeBuildInputs = [
+                    haskellPackages.cabal-install
+                    haskellPackages.haskell-language-server
+                ];
             };
+        };
 }
